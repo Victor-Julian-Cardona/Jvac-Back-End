@@ -4,6 +4,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import User from "./schemas/user.js";
+import('dotenv/config');
 //Configure server and CORS.
 
 const app = express();
@@ -11,9 +12,10 @@ app.use(express.json());
 app.use(cors());
 app.options("*", cors());
 
+
 async function connectToMongoDB() {
   try {
-    await mongoose.connect("mongodb://root:example@localhost:27017", {
+    await mongoose.connect(process.env.MONGO_URI, {
       authSource: "admin",
     });
     console.log("Connected to Mongo");
@@ -73,8 +75,8 @@ app.post("/login", async (req, res, next) => {
       res.status(400).send("Invalid credentials");
     }
   } catch (error) {
-    console.error;
-    next(error);
+    console.error(error)
+    next(error)
   }
 });
 
