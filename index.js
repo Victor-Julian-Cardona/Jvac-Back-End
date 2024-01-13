@@ -4,13 +4,14 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import User from "./schemas/user.js";
+import('dotenv/config');
 //Configure server and CORS.
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 app.options("*", cors());
-require('dotenv').config();
+
 
 async function connectToMongoDB() {
   try {
