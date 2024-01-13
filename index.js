@@ -1,7 +1,7 @@
-import express from "express";
-import cors from "cors";
-import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import cors from "cors";
+import express from "express";
+import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import User from "./schemas/user.js";
 //Configure server and CORS.
@@ -14,7 +14,7 @@ app.options("*", cors());
 async function connectToMongoDB() {
   try {
     await mongoose.connect(
-      "mongodb://root:example@localhost:27017/myDatabase",
+      "mongodb://localhost:27017",
       {
         authSource: "admin",
       }
@@ -52,6 +52,35 @@ const checkForUser = async (email) => {
     console.error(err);
   }
 };
+
+app.post('/login', async (req, res, next) => {
+  try {
+    const {
+      body: { userName, password },
+    } = req;
+    
+    const user = await User.findOne({ userName: userName });
+
+      if (user) {
+          const isMatch = await bcrypt.compare(password, user.password);
+
+          if (isMatch) {
+            const accessToken = jwt.sign({id: user._id}, "secret", { expiresIn: 60 * 60 })
+            res.json({
+                accessToken
+            });
+          } else {
+            res.status(400).send('Invalid credentials');
+          }
+      } else {
+          res.status(400).send('Invalid credentials');
+      }
+  } catch (error) {
+      res.status(500).send('Error during login');
+  }
+});
+
+
 app.post("/signup", async (req, res, next) => {
   const {
     body: { email, password, userName },
@@ -86,9 +115,9 @@ app.post("/signup", async (req, res, next) => {
     next(err);
   }
 });
-app.listen(8080, async () => {
+app.listen(4000, async () => {
   await connectToMongoDB();
   //await deleteAllUsers();
   await fetchAllUsers();
-  console.log("Running on Port 8080");
+  console.log("Running on Port 4000");
 });
