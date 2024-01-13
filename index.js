@@ -74,7 +74,7 @@ app.post("/login", async (req, res, next) => {
     }
   } catch (error) {
     console.error(error)
-    next()
+    next(error)
   }
 });
 
