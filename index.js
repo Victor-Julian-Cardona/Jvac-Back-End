@@ -13,7 +13,7 @@ app.options("*", cors());
 
 async function connectToMongoDB() {
   try {
-    await mongoose.connect("mongodb://root:example@localhost:27017", {
+    await mongoose.connect("mongodb://localhost:27017", {
       authSource: "admin",
     });
     console.log("Connected to Mongo");
