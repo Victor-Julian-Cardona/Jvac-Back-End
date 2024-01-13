@@ -114,6 +114,32 @@ app.post("/signup", async (req, res, next) => {
     next(err);
   }
 });
+
+app.get("/isUserAuthenticated", async (req, res, next)  => {
+    console.log("inside endpioint");
+    let id, token;
+    try {
+        [, token] = req.headers.authorization.split(" ");
+        jwt.verify(token, "secret", (err, decoded) => {
+          if (err) throw err;
+          ({ id } = decoded);
+        });
+        const user = await User.findOne({ _id: id })
+        console.log(user);
+        const { email, userName } = user;
+        res.json({
+          body: {
+            email, 
+            userName
+          },
+        });
+      } catch (error) {
+        console.error(error);
+        next(error);
+      }
+    
+});
+
 app.listen(4000, async () => {
   await connectToMongoDB();
   //await deleteAllUsers();
