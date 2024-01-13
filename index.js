@@ -13,12 +13,9 @@ app.options("*", cors());
 
 async function connectToMongoDB() {
   try {
-    await mongoose.connect(
-      "mongodb://localhost:27017",
-      {
-        authSource: "admin",
-      }
-    );
+    await mongoose.connect("mongodb://root:example@localhost:27017", {
+      authSource: "admin",
+    });
     console.log("Connected to Mongo");
   } catch (error) {
     console.error("Error connecting to MongoDB", error);
@@ -33,8 +30,6 @@ async function connectToMongoDB() {
 //     console.error("Error deleting users:", err);
 //   }
 // }
-
-
 
 const fetchAllUsers = async () => {
   try {
@@ -53,34 +48,35 @@ const checkForUser = async (email) => {
   }
 };
 
-app.post('/login', async (req, res, next) => {
+app.post("/login", async (req, res, next) => {
   try {
     const {
       body: { userName, password },
     } = req;
-    
+
     const user = await User.findOne({ userName: userName });
+    const { email } = user;
+    if (user) {
+      const isMatch = await bcrypt.compare(password, user.password);
 
-      if (user) {
-          const isMatch = await bcrypt.compare(password, user.password);
-
-          if (isMatch) {
-            const accessToken = jwt.sign({id: user._id}, "secret", { expiresIn: 60 * 60 })
-            res.json({
-                accessToken
-            });
-          } else {
-            res.status(400).send('Invalid credentials');
-          }
+      if (isMatch) {
+        const accessToken = jwt.sign({ id: user._id }, "secret", {
+          expiresIn: 60 * 60,
+        });
+        res.json({
+          body: { accessToken, user: {email, userName, password} },
+        });
       } else {
-          res.status(400).send('Invalid credentials');
+        res.status(400).send("Invalid credentials");
       }
+    } else {
+      res.status(400).send("Invalid credentials");
+    }
   } catch (error) {
     console.error(error)
     next()
   }
 });
-
 
 app.post("/signup", async (req, res, next) => {
   const {
@@ -100,7 +96,9 @@ app.post("/signup", async (req, res, next) => {
       userName,
     });
     const savedUser = await newUser.save();
-    const accessToken = jwt.sign({id: savedUser._id}, "secret", { expiresIn: 60 * 60 });
+    const accessToken = jwt.sign({ id: savedUser._id }, "secret", {
+      expiresIn: 60 * 60,
+    });
     console.log(savedUser);
     res.json({
       body: {
