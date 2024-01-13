@@ -10,10 +10,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.options("*", cors());
+require('dotenv').config();
 
 async function connectToMongoDB() {
   try {
-    await mongoose.connect("mongodb://localhost:27017", {
+    await mongoose.connect(process.env.MONGO_URI, {
       authSource: "admin",
     });
     console.log("Connected to Mongo");
