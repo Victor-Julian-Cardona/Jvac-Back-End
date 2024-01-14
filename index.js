@@ -15,7 +15,7 @@ app.options("*", cors());
 
 async function connectToMongoDB() {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
+    await mongoose.connect(MONGO_URI, {
       authSource: "admin",
     });
     console.log("Connected to Mongo");
@@ -118,7 +118,7 @@ app.post("/signup", async (req, res, next) => {
 });
 
 app.get("/isUserAuthenticated", async (req, res, next)  => {
-    console.log("inside endpioint");
+    console.log("inside endpoint");
     let id, token;
     try {
         [, token] = req.headers.authorization.split(" ");
