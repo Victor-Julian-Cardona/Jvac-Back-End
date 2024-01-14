@@ -118,7 +118,7 @@ app.post("/signup", async (req, res, next) => {
 });
 
 app.get("/isUserAuthenticated", async (req, res, next)  => {
-    console.log("inside endpioint");
+    console.log("inside endpoint");
     let id, token;
     try {
         [, token] = req.headers.authorization.split(" ");
