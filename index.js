@@ -15,7 +15,7 @@ app.options("*", cors());
 
 async function connectToMongoDB() {
   try {
-    await mongoose.connect(MONGO_URI, {
+    await mongoose.connect(process.env.MONGO_URI, {
       authSource: "admin",
     });
     console.log("Connected to Mongo");
