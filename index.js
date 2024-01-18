@@ -289,7 +289,7 @@ app.get('/getExpense', async (req, res) => {
 });
 
 
-app.listen(4000, async () => {
+app.listen(PORT, async () => {
   await connectToMongoDB();
   //await deleteAllUsers();
   await fetchAllUsers();
