@@ -293,5 +293,5 @@ app.listen(process.env.PORT, async () => {
   await connectToMongoDB();
   //await deleteAllUsers();
   await fetchAllUsers();
-  console.log("Running on Port 4000");
+  console.log("Running on https://jvac-backend.adaptable.app/");
 });
