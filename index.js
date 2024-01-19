@@ -12,6 +12,7 @@ dotenv.config();
 //Configure server and CORS.
 
 const app = express();
+const router = express.Router();
 app.use(express.json());
 app.use(cors());
 app.options("*", cors());
@@ -244,6 +245,8 @@ app.put("/updateIncome/:incomeId", async (req, res, next) => {
     const { incomeId } = req.params;
     const { category, description, amount, recurrence } = req.body;
 
+    const incomeArray = await Income.find({ "userId": userId })
+
     Income.findByIdAndUpdate(
       incomeId,
       { category, description, amount, recurrence, userId },
@@ -253,7 +256,7 @@ app.put("/updateIncome/:incomeId", async (req, res, next) => {
         if (!updatedIncome) {
           return res.status(404).send("Income not found");
         }
-        res.json(updatedIncome);
+        res.json({updatedIncome, incomeArray});
       })
       .catch(err => {
         console.error(err);
@@ -265,22 +268,165 @@ app.put("/updateIncome/:incomeId", async (req, res, next) => {
   }
 });
 
-app.get('/getExpense', async (req, res) => {
+app.put("/updateExpense/:expenseId", async (req, res, next) => {
+  let token;
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return next;
+    }
+
+    [, token] = authHeader.split(" ");
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return next(err)
+    }
+
+    const userId = decoded.id;
+    const { expenseId } = req.params;
+    const { category, description, amount, recurrence } = req.body;
+
+    const expenseArray = await Expense.find({ "userId": userId })
+
+    Expense.findByIdAndUpdate(
+      expenseId,
+      { category, description, amount, recurrence, userId },
+      { new: true }
+    )
+      .then(updatedExpense => {
+        if (!updatedExpense) {
+          return next();
+        }
+        res.json({updatedExpense, expenseArray});
+      })
+      .catch(err => {
+        console.error(err);
+        next(err);
+      });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+app.get('/getExpense/:expenseId', async (req, res, next) => {
+  let token;
   try {
       const authHeader = req.headers.authorization;
       if (!authHeader) {
-          return res.status(401).send('No authorization token provided');
+          return next()
       }
+
+      token = authHeader.split(" ")[1];
+
+      console.log(token)
 
       let decoded;
       try {
           decoded = jwt.verify(token, process.env.JWT_SECRET);
       } catch (err) {
-          return next(err)
+          return next(err);
       }
-      const userId = decoded.id;
 
-      const expenses = await Expense.find({ userId: userId });
+      const { expenseId } = req.params;
+      console.log(expenseId)
+      const expense = await Expense.findOne({ _id: expenseId});
+      
+      if (!expense) {
+          return res.status(404).send('Expense not found');
+      }
+
+      res.json(expense);
+  } catch (error) {
+      console.error(error);
+      res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/getIncome/:incomeId', async (req, res, next) => {
+  let token;
+  try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+          return next();
+      }
+
+      token = authHeader.split(" ")[1];
+
+      console.log(token);
+
+      let decoded;
+      try {
+          decoded = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (err) {
+          return next(err);
+      }
+
+      const { incomeId } = req.params;
+      console.log(incomeId);
+      const income = await Income.findOne({ _id: incomeId });
+      
+      if (!income) {
+          return res.status(404).send('Income not found');
+      }
+
+      res.json(income);
+  } catch (error) {
+      console.error(error);
+      res.status(500).send('Internal Server Error');
+  }
+});
+
+app.delete('/deleteIncome/:incomeId', async (req, res) => {
+  try {
+      const { incomeId } = req.params;
+
+      const deletedIncome = await Income.findByIdAndDelete(incomeId);
+
+      if (!deletedIncome) {
+          return res.status(404).send('Income not found');
+      }
+
+      res.send(`Income with ID ${incomeId} has been deleted`);
+  } catch (error) {
+      console.error(error);
+      res.status(500).send('Internal Server Error');
+  }
+});
+
+app.delete('/deleteExpense/:expenseId', async (req, res) => {
+  try {
+      const { expenseId } = req.params;
+
+      const deletedExpense = await Expense.findByIdAndDelete(expenseId);
+
+      if (!deletedExpense) {
+          return res.status(404).send('Expense not found');
+      }
+
+      res.send(`Expense with ID ${expenseId} has been deleted`);
+  } catch (error) {
+      console.error(error);
+      res.status(500).send('Internal Server Error');
+  }
+});
+
+
+app.get('/getAllIncomes', async (req, res) => {
+  try {
+      const incomes = await Income.find({});
+      res.json(incomes);
+  } catch (error) {
+      console.error(error);
+      res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/getAllExpenses', async (req, res) => {
+  try {
+      const expenses = await Expense.find({});
       res.json(expenses);
   } catch (error) {
       console.error(error);
