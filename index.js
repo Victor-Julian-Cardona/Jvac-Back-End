@@ -245,17 +245,16 @@ app.put("/updateIncome/:incomeId", async (req, res, next) => {
     const { incomeId } = req.params;
     const { category, description, amount, recurrence } = req.body;
 
-    const incomeArray = await Income.find({ "userId": userId })
-
     Income.findByIdAndUpdate(
       incomeId,
       { category, description, amount, recurrence, userId },
       { new: true }
     )
-      .then(updatedIncome => {
+      .then(async (updatedIncome) => {
         if (!updatedIncome) {
           return res.status(404).send("Income not found");
         }
+        const incomeArray = await Income.find({ "userId": userId })
         res.json({updatedIncome, incomeArray});
       })
       .catch(err => {
@@ -288,17 +287,17 @@ app.put("/updateExpense/:expenseId", async (req, res, next) => {
     const { expenseId } = req.params;
     const { category, description, amount, recurrence } = req.body;
 
-    const expenseArray = await Expense.find({ "userId": userId })
 
     Expense.findByIdAndUpdate(
       expenseId,
       { category, description, amount, recurrence, userId },
       { new: true }
     )
-      .then(updatedExpense => {
+      .then( async (updatedExpense) => {
         if (!updatedExpense) {
           return next();
         }
+        const expenseArray = await Expense.find({ "userId": userId })
         res.json({updatedExpense, expenseArray});
       })
       .catch(err => {
